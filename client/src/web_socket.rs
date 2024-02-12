@@ -1,3 +1,5 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 use std::thread;
 
 use tungstenite::{connect, Message};
@@ -27,32 +29,26 @@ pub fn client() {
                         if id == -1 {
                             let uuid = String::from_utf8(bin[1..].to_vec()).unwrap();
                             id = uuid.parse::<i32>().unwrap();
-                            println!("Received id: {}", id);
                         }
                     }
                     1 => {
                         if !*STATUS.lock().unwrap() {
-                            println!("Received Allow message");
                             *STATUS.lock().unwrap() = true;
                         }
                     }
                     2 => {
                         if *STATUS.lock().unwrap() {
-                            println!("Received Deny message");
                             *STATUS.lock().unwrap() = false;
                         }
                     }
                     3 => {
                         let request_id = String::from_utf8(bin[1..].to_vec()).unwrap();
-                        if request_id == id.to_string() {
-                            println!("Received Shutdown message");
-                        }
+                        if request_id == id.to_string() {}
                     }
                     _ => println!("Received unknown message"),
                 },
                 // Used to handle server close
                 Ok(Message::Close(_)) => {
-                    println!("Received Close message");
                     break;
                 }
                 Ok(_) => continue,

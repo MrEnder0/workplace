@@ -1,3 +1,5 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 use std::{sync::Mutex, thread, time::Duration};
 
 use eframe::egui;
@@ -84,9 +86,5 @@ impl eframe::App for MyApp {
             Duration::from_millis(((1.0 / self.frame_limit as f32) * 1000.0).round() as u64);
         std::thread::sleep(self.next_frame - Duration::from_millis(1));
         ctx.request_repaint()
-    }
-
-    fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
-        println!("Exiting...");
     }
 }
