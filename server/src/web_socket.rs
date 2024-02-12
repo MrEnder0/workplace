@@ -11,7 +11,7 @@ static ID: Mutex<u64> = Mutex::new(0);
 
 pub fn server() {
     loop {
-        let server = TcpListener::bind("127.0.0.1:3012").unwrap();
+        let server = TcpListener::bind(format!("{}:3012", get_server_ip())).unwrap();
         for stream in server.incoming() {
             spawn(move || {
                 let callback = |_req: &Request, mut response: Response| {
@@ -49,6 +49,16 @@ pub fn server() {
                     std::thread::sleep(std::time::Duration::from_secs(5));
                 });
             });
+        }
+    }
+}
+
+fn get_server_ip() -> String {
+    match std::fs::read_to_string("server_ip") {
+        Ok(file) => file,
+        Err(_) => {
+            println!("server_ip file not found, using localhost, please create server_ip file");
+            "localhost".to_string()
         }
     }
 }

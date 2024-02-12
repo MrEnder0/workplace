@@ -1,1 +1,7 @@
-[ ] Add update system where server use ver-cmp and reqwest  while the host uses self-replace and reqwest 
+[ ] Add update system wihth where hose use ver-cmp and reqwest and client use self-replace and reqwest 
+    [ ] Server fetch update info
+    [ ] Server ask clients for their versions
+    [ ] Clients respond with versions
+    [ ] If client is less than server update to server version
+    [ ] Use self replace to allow over the air updates with only a single button press needed and a restart
+    [ ] Detect server version and show when server update is available

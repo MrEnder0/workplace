@@ -9,7 +9,9 @@ use crate::STATUS;
 
 pub fn client() {
     'connection: loop {
-        let (mut socket, _) = match connect(Url::parse("ws://localhost:3012/socket").unwrap()) {
+        let (mut socket, _) = match connect(
+            Url::parse(format!("ws://{}:3012/socket", get_server_ip()).as_str()).unwrap(),
+        ) {
             Ok((socket, response)) => (socket, response),
             Err(_) => {
                 println!("Can't connect, retrying in 5 seconds...");
@@ -57,6 +59,16 @@ pub fn client() {
                     break;
                 }
             };
+        }
+    }
+}
+
+fn get_server_ip() -> String {
+    match std::fs::read_to_string("server_ip") {
+        Ok(file) => file,
+        Err(_) => {
+            println!("server_ip file not found, using localhost, please create server_ip file");
+            "localhost".to_string()
         }
     }
 }
