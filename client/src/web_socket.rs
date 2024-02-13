@@ -34,7 +34,8 @@ pub fn client() {
                     1 => {
                         if id != -1 {
                             socket
-                                .send(Message::Text(format!("HeartBeat:{}", id))).unwrap();
+                                .send(Message::Text(format!("HeartBeat:{}", id)))
+                                .unwrap();
                         }
                     }
                     2 => {

@@ -25,7 +25,8 @@ pub fn server() {
 
                 websocket
                     .send(tungstenite::Message::binary(
-                        ServerAction::Init(heartbeat::assign_lowest_available_id().to_string()).into_bytes(),
+                        ServerAction::Init(heartbeat::assign_lowest_available_id().to_string())
+                            .into_bytes(),
                     ))
                     .unwrap();
 
@@ -33,7 +34,9 @@ pub fn server() {
                     match *crate::STATUS.lock().unwrap() {
                         true => {
                             websocket
-                                .send(tungstenite::Message::binary(ServerAction::Deny.into_bytes()))
+                                .send(tungstenite::Message::binary(
+                                    ServerAction::Deny.into_bytes(),
+                                ))
                                 .unwrap_or_else(|_| {
                                     println!("Failed to send deny message");
                                     let _ = websocket.close(None);
@@ -41,7 +44,9 @@ pub fn server() {
                         }
                         false => {
                             websocket
-                                .send(tungstenite::Message::binary(ServerAction::Allow.into_bytes()))
+                                .send(tungstenite::Message::binary(
+                                    ServerAction::Allow.into_bytes(),
+                                ))
                                 .unwrap_or_else(|_| {
                                     println!("Failed to send allow message");
                                     let _ = websocket.close(None);
@@ -50,15 +55,19 @@ pub fn server() {
                     }
 
                     websocket
-                        .send(tungstenite::Message::binary(ServerAction::HeartBeat.into_bytes()))
+                        .send(tungstenite::Message::binary(
+                            ServerAction::HeartBeat.into_bytes(),
+                        ))
                         .unwrap();
 
-                        let heartbeat = websocket.read().unwrap();
+                    let heartbeat = websocket.read().unwrap();
 
                     if heartbeat.is_text() {
                         let heartbeat = heartbeat.to_text().unwrap();
                         if heartbeat.starts_with("HeartBeat:") {
-                            let id = heartbeat.split(':').collect::<Vec<&str>>()[1].parse::<i32>().unwrap();
+                            let id = heartbeat.split(':').collect::<Vec<&str>>()[1]
+                                .parse::<i32>()
+                                .unwrap();
                             println!("Received heartbeat from id {}", id);
                             heartbeat::update_heartbeat(id);
                         }
