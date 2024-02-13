@@ -7,7 +7,7 @@ use sysinfo::System;
 
 static STATUS: Mutex<bool> = Mutex::new(false);
 
-const PROCESS_NAMES: [&str; 3] = ["RobloxPlayerBeta", "RobloxPlayer", "Minecraft.Windows"];
+const PROCESS_NAMES: [&str; 5] = ["RobloxPlayerBeta", "RobloxPlayer", "Minecraft.Windows", "EpicGamesLauncher", "XboxPcApp"];
 
 fn main() {
     thread::spawn(|| {
@@ -15,12 +15,11 @@ fn main() {
     });
 
     loop {
-        thread::sleep(std::time::Duration::from_secs(10));
-        if !*STATUS.lock().unwrap() {
+        thread::sleep(std::time::Duration::from_secs(3));
+        if *STATUS.lock().unwrap() {
             let s = System::new_all();
             for process_name in PROCESS_NAMES.iter() {
                 for process in s.processes_by_name(process_name) {
-                    println!("{} {}", process.pid(), process.name());
                     process.kill();
                 }
             }
