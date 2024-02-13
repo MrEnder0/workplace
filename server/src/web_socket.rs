@@ -1,17 +1,15 @@
-use crate::actions::Action;
+use crate::{actions::ServerAction, heartbeat};
 
-use std::{net::TcpListener, sync::Mutex, thread::spawn};
+use std::{net::TcpListener, thread::spawn};
 
 use tungstenite::{
     accept_hdr,
     handshake::server::{Request, Response},
 };
 
-static ID: Mutex<u64> = Mutex::new(0);
-
 pub fn server() {
     loop {
-        let server = TcpListener::bind(format!("{}:3012", get_server_ip())).unwrap();
+        let server = TcpListener::bind("0.0.0.0:3012").unwrap();
         for stream in server.incoming() {
             spawn(move || {
                 let callback = |_req: &Request, mut response: Response| {
@@ -27,38 +25,48 @@ pub fn server() {
 
                 websocket
                     .send(tungstenite::Message::binary(
-                        Action::Init((*ID.lock().unwrap()).to_string()).into_bytes(),
+                        ServerAction::Init(heartbeat::assign_lowest_available_id().to_string()).into_bytes(),
                     ))
                     .unwrap();
-                *ID.lock().unwrap() += 1;
 
                 spawn(move || loop {
                     match *crate::STATUS.lock().unwrap() {
                         true => {
                             websocket
-                                .send(tungstenite::Message::binary(Action::Deny.into_bytes()))
-                                .unwrap();
+                                .send(tungstenite::Message::binary(ServerAction::Deny.into_bytes()))
+                                .unwrap_or_else(|_| {
+                                    println!("Failed to send deny message");
+                                    let _ = websocket.close(None);
+                                });
                         }
                         false => {
                             websocket
-                                .send(tungstenite::Message::binary(Action::Allow.into_bytes()))
-                                .unwrap();
+                                .send(tungstenite::Message::binary(ServerAction::Allow.into_bytes()))
+                                .unwrap_or_else(|_| {
+                                    println!("Failed to send allow message");
+                                    let _ = websocket.close(None);
+                                });
+                        }
+                    }
+
+                    websocket
+                        .send(tungstenite::Message::binary(ServerAction::HeartBeat.into_bytes()))
+                        .unwrap();
+
+                        let heartbeat = websocket.read().unwrap();
+
+                    if heartbeat.is_text() {
+                        let heartbeat = heartbeat.to_text().unwrap();
+                        if heartbeat.starts_with("HeartBeat:") {
+                            let id = heartbeat.split(':').collect::<Vec<&str>>()[1].parse::<i32>().unwrap();
+                            println!("Received heartbeat from id {}", id);
+                            heartbeat::update_heartbeat(id);
                         }
                     }
 
                     std::thread::sleep(std::time::Duration::from_secs(5));
                 });
             });
-        }
-    }
-}
-
-fn get_server_ip() -> String {
-    match std::fs::read_to_string("server_ip") {
-        Ok(file) => file,
-        Err(_) => {
-            println!("server_ip file not found, using localhost, please create server_ip file");
-            "localhost".to_string()
         }
     }
 }

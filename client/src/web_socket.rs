@@ -1,5 +1,3 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
 use std::thread;
 
 use tungstenite::{connect, Message};
@@ -34,16 +32,22 @@ pub fn client() {
                         }
                     }
                     1 => {
+                        if id != -1 {
+                            socket
+                                .send(Message::Text(format!("HeartBeat:{}", id))).unwrap();
+                        }
+                    }
+                    2 => {
                         if !*STATUS.lock().unwrap() {
                             *STATUS.lock().unwrap() = true;
                         }
                     }
-                    2 => {
+                    3 => {
                         if *STATUS.lock().unwrap() {
                             *STATUS.lock().unwrap() = false;
                         }
                     }
-                    3 => {
+                    4 => {
                         let request_id = String::from_utf8(bin[1..].to_vec()).unwrap();
                         if request_id == id.to_string() {}
                     }

@@ -3536,7 +3536,7 @@ dependencies = [
 
 [[package]]
 name = "workplace-client"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "sysinfo",
  "tungstenite",
@@ -3545,9 +3545,10 @@ dependencies = [
 
 [[package]]
 name = "workplace-server"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "eframe",
+ "once_cell",
  "tungstenite",
 ]
 

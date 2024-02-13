@@ -1,3 +1,5 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 mod web_socket;
 
 use std::{sync::Mutex, thread};

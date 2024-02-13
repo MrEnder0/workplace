@@ -6,12 +6,17 @@ use eframe::egui;
 
 mod actions;
 mod web_socket;
+mod heartbeat;
 
 static STATUS: Mutex<bool> = Mutex::new(false);
 
 fn main() -> Result<(), eframe::Error> {
     thread::spawn(|| {
         web_socket::server();
+    });
+
+    thread::spawn(|| {
+        heartbeat::heartbeat_thread();
     });
 
     eframe::run_native(
