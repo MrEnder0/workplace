@@ -2,17 +2,17 @@ use once_cell::sync::Lazy;
 use std::{collections::HashMap, sync::Mutex};
 
 // Hashmap<id, last_heartbeat>
-pub static HEARTBEATS: Lazy<Mutex<HashMap<i32, std::time::Instant>>> =
+pub static HEARTBEATS: Lazy<Mutex<HashMap<u8, std::time::Instant>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
-pub fn update_heartbeat(id: i32) {
+pub fn update_heartbeat(id: u8) {
     HEARTBEATS
         .lock()
         .unwrap()
         .insert(id, std::time::Instant::now());
 }
 
-pub fn assign_lowest_available_id() -> i32 {
+pub fn assign_lowest_available_id() -> u8 {
     let mut id = 0;
     loop {
         if !HEARTBEATS.lock().unwrap().contains_key(&id) {
@@ -22,8 +22,8 @@ pub fn assign_lowest_available_id() -> i32 {
     }
 }
 
-pub fn get_clients() -> u32 {
-    HEARTBEATS.lock().unwrap().len() as u32
+pub fn get_clients() -> u8 {
+    HEARTBEATS.lock().unwrap().len() as u8
 }
 
 pub fn heartbeat_thread() {

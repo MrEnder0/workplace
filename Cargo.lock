@@ -3541,7 +3541,12 @@ dependencies = [
  "sysinfo",
  "tungstenite",
  "url",
+ "workplace-common",
 ]
+
+[[package]]
+name = "workplace-common"
+version = "0.1.0"
 
 [[package]]
 name = "workplace-server"
@@ -3550,6 +3555,7 @@ dependencies = [
  "eframe",
  "once_cell",
  "tungstenite",
+ "workplace-common",
 ]
 
 [[package]]

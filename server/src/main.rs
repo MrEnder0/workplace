@@ -1,12 +1,8 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
-use std::{fmt::format, sync::Mutex, thread, time::Duration};
-
-use eframe::egui;
-
-mod actions;
 mod heartbeat;
 mod web_socket;
+
+use eframe::egui;
+use std::{sync::Mutex, thread, time::Duration};
 
 static STATUS: Mutex<bool> = Mutex::new(false);
 
@@ -35,7 +31,7 @@ struct MyApp {
     dark_mode: bool,
     next_frame: Duration,
     status: bool,
-    clients: u32,
+    clients: u8,
 }
 
 impl Default for MyApp {

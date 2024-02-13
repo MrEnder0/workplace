@@ -1,13 +1,16 @@
-use crate::{actions::ServerAction, heartbeat};
+use crate::heartbeat;
 
 use std::{net::TcpListener, thread::spawn};
 
 use tungstenite::{
     accept_hdr,
     handshake::server::{Request, Response},
+    Message,
 };
+use workplace_common::{decode_client_packet, ClientAction, InitInfo, ServerAction};
 
 pub fn server() {
+    let ver = env!("CARGO_PKG_VERSION");
     loop {
         let server = TcpListener::bind("0.0.0.0:3012").unwrap();
         for stream in server.incoming() {
@@ -25,8 +28,11 @@ pub fn server() {
 
                 websocket
                     .send(tungstenite::Message::binary(
-                        ServerAction::Init(heartbeat::assign_lowest_available_id().to_string())
-                            .into_bytes(),
+                        ServerAction::Init(InitInfo {
+                            id: heartbeat::assign_lowest_available_id() as u8,
+                            server_version: env!("CARGO_PKG_VERSION").to_string(),
+                        })
+                        .into_bytes(),
                     ))
                     .unwrap();
 
@@ -60,18 +66,23 @@ pub fn server() {
                         ))
                         .unwrap();
 
-                    let heartbeat = websocket.read().unwrap();
+                    match websocket.read() {
+                        Ok(Message::Binary(bin)) => {
+                            let decoded_packet = decode_client_packet(bin);
 
-                    if heartbeat.is_text() {
-                        let heartbeat = heartbeat.to_text().unwrap();
-                        if heartbeat.starts_with("HeartBeat:") {
-                            let id = heartbeat.split(':').collect::<Vec<&str>>()[1]
-                                .parse::<i32>()
-                                .unwrap();
-                            println!("Received heartbeat from id {}", id);
-                            heartbeat::update_heartbeat(id);
+                            match decoded_packet {
+                                ClientAction::HeartBeat(id) => {
+                                    println!("Received heartbeat from id {}", id);
+                                    heartbeat::update_heartbeat(id);
+                                }
+                            }
                         }
-                    }
+                        Ok(_) => {}
+                        Err(_) => {
+                            println!("Error reading message, server may have disconnected. Attempting to reconnect...");
+                            break;
+                        }
+                    };
 
                     std::thread::sleep(std::time::Duration::from_secs(5));
                 });

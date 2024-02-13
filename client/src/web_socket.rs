@@ -2,6 +2,7 @@ use std::thread;
 
 use tungstenite::{connect, Message};
 use url::Url;
+use workplace_common::{decode_server_packet, ClientAction, ServerAction};
 
 use crate::STATUS;
 
@@ -18,45 +19,45 @@ pub fn client() {
             }
         };
 
-        let mut id = -1;
+        let mut id: Option<u8> = None;
 
         println!("Connected to the server");
 
         loop {
             match socket.read() {
-                Ok(Message::Binary(bin)) => match bin[0] {
-                    0 => {
-                        if id == -1 {
-                            let uuid = String::from_utf8(bin[1..].to_vec()).unwrap();
-                            id = uuid.parse::<i32>().unwrap();
+                Ok(Message::Binary(bin)) => {
+                    let decoded_packet = decode_server_packet(bin);
+
+                    match decoded_packet {
+                        ServerAction::Init(info) => {
+                            id = Some(info.id);
+                            println!(
+                                "Received id {} from a server running version {}",
+                                info.id, info.server_version
+                            );
                         }
-                    }
-                    1 => {
-                        if id != -1 {
+                        ServerAction::HeartBeat => {
                             socket
-                                .send(Message::Text(format!("HeartBeat:{}", id)))
+                                .send(Message::Binary(ClientAction::HeartBeat(id.unwrap()).into_bytes()))
                                 .unwrap();
                         }
-                    }
-                    2 => {
-                        if !*STATUS.lock().unwrap() {
-                            *STATUS.lock().unwrap() = true;
+                        ServerAction::Allow => {
+                            if *STATUS.lock().unwrap() {
+                                *STATUS.lock().unwrap() = false;
+                            }
+                        }
+                        ServerAction::Deny => {
+                            if !*STATUS.lock().unwrap() {
+                                *STATUS.lock().unwrap() = true;
+                            }
+                        }
+                        ServerAction::Shutdown(requested_id) => {
+                            if requested_id == id.unwrap().to_string() {
+                                println!("Server has requested a shutdown");
+                                break;
+                            }
                         }
                     }
-                    3 => {
-                        if *STATUS.lock().unwrap() {
-                            *STATUS.lock().unwrap() = false;
-                        }
-                    }
-                    4 => {
-                        let request_id = String::from_utf8(bin[1..].to_vec()).unwrap();
-                        if request_id == id.to_string() {}
-                    }
-                    _ => println!("Received unknown message"),
-                },
-                // Used to handle server close
-                Ok(Message::Close(_)) => {
-                    break;
                 }
                 Ok(_) => continue,
                 Err(_) => {

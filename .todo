@@ -1,7 +1,15 @@
+0.1.3
+[ ] Create common library for shared code between server and client
+    [ ] Overhaul packet system and create nice to work with code
+
+0.1.4
 [ ] Add update system wihth where hose use ver-cmp and reqwest and client use self-replace and reqwest 
-    [ ] Server fetch update info
-    [ ] Server ask clients for their versions
-    [ ] Clients respond with versions
-    [ ] If client is less than server update to server version
+    [ ] Server tells clients its version on startup
+    [ ] If client is less than server update to same version as server version
     [ ] Use self replace to allow over the air updates with only a single button press needed and a restart
     [ ] Detect server version and show when server update is available
+
+0.1.5
+[ ] Add scorched logging
+    [ ] Add logging to server
+    [ ] Add logging to client
