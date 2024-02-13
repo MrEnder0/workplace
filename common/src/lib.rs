@@ -8,7 +8,7 @@ pub enum ServerAction {
     /// Notifys the client that it is denied
     Deny,
     /// Shutdown a client based on the id given by the init action, planned use in the future
-    Shutdown(String),
+    Shutdown(u8),
 }
 
 pub struct InitInfo {
@@ -30,7 +30,7 @@ impl ServerAction {
             ServerAction::Deny => vec![3],
             ServerAction::Shutdown(id) => {
                 let mut bytes = vec![4];
-                bytes.push(id.parse::<u8>().unwrap());
+                bytes.push(id);
                 bytes
             }
         }
@@ -65,7 +65,7 @@ pub fn decode_server_packet(packet: Vec<u8>) -> ServerAction {
         2 => ServerAction::Allow,
         3 => ServerAction::Deny,
         4 => {
-            let id = String::from_utf8(packet[1..].to_vec()).unwrap();
+            let id = packet[1];
             ServerAction::Shutdown(id)
         }
         _ => panic!("Unknown action"),

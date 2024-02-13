@@ -38,7 +38,9 @@ pub fn client() {
                         }
                         ServerAction::HeartBeat => {
                             socket
-                                .send(Message::Binary(ClientAction::HeartBeat(id.unwrap()).into_bytes()))
+                                .send(Message::Binary(
+                                    ClientAction::HeartBeat(id.unwrap()).into_bytes(),
+                                ))
                                 .unwrap();
                         }
                         ServerAction::Allow => {
@@ -52,7 +54,7 @@ pub fn client() {
                             }
                         }
                         ServerAction::Shutdown(requested_id) => {
-                            if requested_id == id.unwrap().to_string() {
+                            if requested_id == id.unwrap() {
                                 println!("Server has requested a shutdown");
                                 break;
                             }

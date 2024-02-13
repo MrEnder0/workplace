@@ -10,7 +10,6 @@ use tungstenite::{
 use workplace_common::{decode_client_packet, ClientAction, InitInfo, ServerAction};
 
 pub fn server() {
-    let ver = env!("CARGO_PKG_VERSION");
     loop {
         let server = TcpListener::bind("0.0.0.0:3012").unwrap();
         for stream in server.incoming() {
@@ -29,7 +28,7 @@ pub fn server() {
                 websocket
                     .send(tungstenite::Message::binary(
                         ServerAction::Init(InitInfo {
-                            id: heartbeat::assign_lowest_available_id() as u8,
+                            id: heartbeat::assign_lowest_available_id(),
                             server_version: env!("CARGO_PKG_VERSION").to_string(),
                         })
                         .into_bytes(),
