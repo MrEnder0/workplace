@@ -11,7 +11,6 @@ This allows you to remotely shutdown specific processes on devices on the same n
 
 > [!IMPORTANT]
 > This following command is required if you have your firewall enabled on your Windows host; this will allow the server to receive requests on port 3012, make sure to run it as an administrator.
-
-```powershell
-netsh advfirewall firewall add rule name= "Workplace Server" dir=in action=allow protocol=TCP localport=3012
-```
+> ```powershell
+> netsh advfirewall firewall add rule name= "Workplace Server" dir=in action=allow protocol=TCP localport=3012
+> ```
