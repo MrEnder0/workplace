@@ -4,10 +4,13 @@
 
 This allows you to remotely shutdown specific processes on devices on the same network.
 
-## Instalation
+## Installation
 
 * Download the lastest workplace server executable from the releases page and put it in its startup.
 * After you setup your server get all your computers you want to controll the workplace client on them and put them in startup, make sure you also create a "server_ip" file contaning solely the local private ip of the server.
+
+> [!NOTE]
+> Make sure your server_ip file has no file extension, also if no server ip file is found the client will continue but with the default ip of localhost.
 
 > [!IMPORTANT]
 > This following command is required if you have your firewall enabled on your Windows host; this will allow the server to receive requests on port 3012, make sure to run it as an administrator.
