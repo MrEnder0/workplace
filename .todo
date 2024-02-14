@@ -4,11 +4,10 @@
 	[x] Use u8 instead of string for the id
 
 0.1.4
-[ ] Add update system wihth where hose use ver-cmp and reqwest and client use self-replace and reqwest 
-    [ ] Server tells clients its version on startup
-    [ ] If client is less than server update to same version as server version
-    [ ] Use self replace to allow over the air updates with only a single button press needed and a restart
-    [ ] Detect server version and show when server update is available
+[x] Add update system wihth where hose use ver-cmp and reqwest and client use self-replace and reqwest 
+    [x] Server tells clients its version on startup
+    [x] If client is less than server update to same version as server version
+    [x] Use self replace to allow over the air updates with only a single button press needed and a restart
 
 0.1.5
 [ ] Add scorched logging

@@ -31,10 +31,11 @@ pub fn client() {
                     match decoded_packet {
                         ServerAction::Init(info) => {
                             id = Some(info.id);
-                            println!(
-                                "Received id {} from a server running version {}",
-                                info.id, info.server_version
-                            );
+
+                            if info.server_version != env!("CARGO_PKG_VERSION") {
+                                println!("Server is running a different version, updating...");
+                                update_client(&info.server_version);
+                            }
                         }
                         ServerAction::HeartBeat => {
                             socket
@@ -79,4 +80,13 @@ fn get_server_ip() -> String {
             "localhost".to_string()
         }
     }
+}
+
+fn update_client(version: &str) {
+    let url = format!("https://github.com/MrEnder0/workplace/releases/download/{}/workplace-client.exe", version);
+    let response = reqwest::blocking::get(url).unwrap();
+
+    std::fs::write("workplace-client.exe.update", response.bytes().unwrap()).unwrap();
+
+    self_replace::self_replace("workplace-client.exe.update").unwrap();
 }
