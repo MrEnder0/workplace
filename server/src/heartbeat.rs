@@ -22,16 +22,15 @@ pub fn assign_lowest_available_id() -> u8 {
     }
 }
 
-pub fn get_clients() -> u8 {
-    HEARTBEATS.lock().unwrap().len() as u8
+pub fn get_clients() -> Vec<u8> {
+    HEARTBEATS.lock().unwrap().keys().cloned().collect()
 }
 
 pub fn heartbeat_thread() {
     loop {
-        std::thread::sleep(std::time::Duration::from_secs(5));
         let heartbeats = HEARTBEATS.lock().unwrap().clone();
         for heartbeat in heartbeats.iter() {
-            if heartbeat.1.elapsed().as_secs() > 10 {
+            if heartbeat.1.elapsed().as_secs() > 15 {
                 println!("Heartbeat for id {} has expired", heartbeat.0);
                 HEARTBEATS.lock().unwrap().remove(heartbeat.0);
             }

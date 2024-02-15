@@ -4040,7 +4040,7 @@ dependencies = [
 
 [[package]]
 name = "workplace-client"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "reqwest",
  "self-replace",
@@ -4052,11 +4052,11 @@ dependencies = [
 
 [[package]]
 name = "workplace-common"
-version = "0.1.4"
+version = "0.1.5"
 
 [[package]]
 name = "workplace-server"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "eframe",
  "once_cell",

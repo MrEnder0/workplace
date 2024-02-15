@@ -1,13 +1,24 @@
 use crate::heartbeat;
 
-use std::{net::TcpListener, thread::spawn};
+use std::{collections::HashMap, net::TcpListener, thread::spawn};
 
+use eframe::epaint::mutex::Mutex;
+use once_cell::sync::Lazy;
 use tungstenite::{
     accept_hdr,
     handshake::server::{Request, Response},
     Message,
 };
 use workplace_common::{decode_client_packet, ClientAction, InitInfo, ServerAction};
+
+static PENDING_ACTIONS: Lazy<Mutex<HashMap<u8, UiAction>>> =
+    Lazy::new(|| Mutex::new(HashMap::new()));
+
+#[derive(Clone, Copy)]
+pub enum UiAction {
+    Shutdown,
+    Restart,
+}
 
 pub fn server() {
     loop {
@@ -63,7 +74,10 @@ pub fn server() {
                         .send(tungstenite::Message::binary(
                             ServerAction::HeartBeat.into_bytes(),
                         ))
-                        .unwrap();
+                        .unwrap_or_else(|_| {
+                            println!("Failed to send heartbeat message");
+                            let _ = websocket.close(None);
+                        });
 
                     match websocket.read() {
                         Ok(Message::Binary(bin)) => {
@@ -83,9 +97,38 @@ pub fn server() {
                         }
                     };
 
-                    std::thread::sleep(std::time::Duration::from_secs(5));
+                    let pending_actions = PENDING_ACTIONS.lock().clone();
+
+                    for (id, action) in pending_actions.iter() {
+                        match action {
+                            UiAction::Shutdown => {
+                                websocket
+                                    .send(tungstenite::Message::binary(
+                                        ServerAction::Shutdown(*id).into_bytes(),
+                                    ))
+                                    .unwrap();
+                            }
+                            UiAction::Restart => {
+                                websocket
+                                    .send(tungstenite::Message::binary(
+                                        ServerAction::Restart(*id).into_bytes(),
+                                    ))
+                                    .unwrap();
+                            }
+                        }
+                    }
+
+                    std::thread::sleep(std::time::Duration::from_secs(3));
                 });
             });
         }
     }
+}
+
+pub fn request_shutdown(id: u8) {
+    PENDING_ACTIONS.lock().insert(id, UiAction::Shutdown);
+}
+
+pub fn request_restart(id: u8) {
+    PENDING_ACTIONS.lock().insert(id, UiAction::Restart);
 }

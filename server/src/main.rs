@@ -3,7 +3,7 @@
 mod heartbeat;
 mod web_socket;
 
-use eframe::egui;
+use eframe::egui::{self, ScrollArea};
 use std::{sync::Mutex, thread, time::Duration};
 
 static STATUS: Mutex<bool> = Mutex::new(false);
@@ -33,7 +33,7 @@ struct MyApp {
     dark_mode: bool,
     next_frame: Duration,
     status: bool,
-    clients: u8,
+    clients: Vec<u8>,
 }
 
 impl Default for MyApp {
@@ -44,7 +44,7 @@ impl Default for MyApp {
             dark_mode: true,
             next_frame: Duration::from_secs(0),
             status: false,
-            clients: 0,
+            clients: vec![],
         }
     }
 }
@@ -52,20 +52,6 @@ impl Default for MyApp {
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Information");
-
-            ui.horizontal(|ui| {
-                ui.label(format!("Number of clients connected: {}", self.clients));
-                if ui
-                    .button("Refresh")
-                    .on_hover_text("Refreshes the number of clients connected to the server")
-                    .clicked()
-                {
-                    self.clients = heartbeat::get_clients();
-                }
-            });
-            ui.separator();
-
             ui.heading("Options");
 
             if ui
@@ -85,6 +71,44 @@ impl eframe::App for MyApp {
                 }
             }
             ui.add(egui::Slider::new(&mut self.frame_limit, 15..=120).text("UI FPS Limit")).on_hover_text("Limits the FPS of the UI, higher values may increase the smoothness of the UI but may also increase CPU usage");
+
+            ui.separator();
+
+            ui.heading("Clients Info");
+
+            ui.horizontal(|ui| {
+                ui.label(format!("Number of clients connected: {}", self.clients.len()));
+                if ui
+                    .button("Refresh")
+                    .on_hover_text("Refreshes the number of clients connected to the server")
+                    .clicked()
+                {
+                    self.clients = heartbeat::get_clients();
+                }
+            });
+
+            //add scroll box vertical
+            ScrollArea::vertical().show(ui, |ui| {
+                for client in self.clients.iter() {
+                    ui.horizontal(|ui| {
+                        ui.label(format!("Client ID: {}", client));
+                        if ui
+                            .button("Shutdown")
+                            .on_hover_text("Shuts down the client")
+                            .clicked()
+                        {
+                            web_socket::request_shutdown(*client);
+                        }
+                        if ui
+                            .button("Restart")
+                            .on_hover_text("Restarts the client")
+                            .clicked()
+                        {
+                            web_socket::request_restart(*client);
+                        }
+                    });
+                }
+            });
         });
 
         egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {

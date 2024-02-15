@@ -10,6 +10,11 @@
     [x] Use self replace to allow over the air updates with only a single button press needed and a restart
 
 0.1.5
+[x] Client shutdowns
+[x] Improve client reliability
+[x] Add more error catching to server to prevent crashes
+
+0.1.6
 [ ] Add scorched logging
     [ ] Add logging to server
     [ ] Add logging to client

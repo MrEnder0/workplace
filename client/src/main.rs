@@ -7,7 +7,13 @@ use sysinfo::System;
 
 static STATUS: Mutex<bool> = Mutex::new(false);
 
-const PROCESS_NAMES: [&str; 5] = ["RobloxPlayerBeta", "RobloxPlayer", "Minecraft.Windows", "EpicGamesLauncher", "XboxPcApp"];
+const PROCESS_NAMES: [&str; 5] = [
+    "RobloxPlayerBeta",
+    "RobloxPlayer",
+    "Minecraft.Windows",
+    "EpicGamesLauncher",
+    "XboxPcApp",
+];
 
 fn main() {
     thread::spawn(|| {

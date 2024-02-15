@@ -56,8 +56,20 @@ pub fn client() {
                         }
                         ServerAction::Shutdown(requested_id) => {
                             if requested_id == id.unwrap() {
-                                println!("Server has requested a shutdown");
-                                break;
+                                println!("Shutting down client...");
+                                std::process::Command::new("shutdown")
+                                    .args(["/s", "/t", "0"])
+                                    .spawn()
+                                    .unwrap();
+                            }
+                        }
+                        ServerAction::Restart(requested_id) => {
+                            if requested_id == id.unwrap() {
+                                println!("Restarting client...");
+                                std::process::Command::new("shutdown")
+                                    .args(["/r", "/t", "0"])
+                                    .spawn()
+                                    .unwrap();
                             }
                         }
                     }
@@ -73,7 +85,7 @@ pub fn client() {
 }
 
 fn get_server_ip() -> String {
-    match std::fs::read_to_string("server_ip") {
+    match std::fs::read_to_string(r"C:\ProgramData\server_ip.dat") {
         Ok(file) => file,
         Err(_) => {
             println!("server_ip file not found, using localhost, please create server_ip file");
@@ -83,7 +95,10 @@ fn get_server_ip() -> String {
 }
 
 fn update_client(version: &str) {
-    let url = format!("https://github.com/MrEnder0/workplace/releases/download/{}/workplace-client.exe", version);
+    let url = format!(
+        "https://github.com/MrEnder0/workplace/releases/download/{}/workplace-client.exe",
+        version
+    );
     let response = reqwest::blocking::get(url).unwrap();
 
     std::fs::write("workplace-client.exe.update", response.bytes().unwrap()).unwrap();

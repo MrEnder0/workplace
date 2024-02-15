@@ -1,5 +1,5 @@
 pub enum ServerAction {
-    /// Gives unassigned clients their id, id will have client specific interactions in the future
+    /// Gives unassigned clients their id
     Init(InitInfo),
     /// Request to allow the clients to reply with their id to show they are still active
     HeartBeat,
@@ -7,8 +7,10 @@ pub enum ServerAction {
     Allow,
     /// Notifys the client that it is denied
     Deny,
-    /// Shutdown a client based on the id given by the init action, planned use in the future
+    /// Shutdown a client based on the id given by the init action
     Shutdown(u8),
+    /// Restart the client based on the id given by the init action
+    Restart(u8),
 }
 
 pub struct InitInfo {
@@ -30,6 +32,11 @@ impl ServerAction {
             ServerAction::Deny => vec![3],
             ServerAction::Shutdown(id) => {
                 let mut bytes = vec![4];
+                bytes.push(id);
+                bytes
+            }
+            ServerAction::Restart(id) => {
+                let mut bytes = vec![5];
                 bytes.push(id);
                 bytes
             }
@@ -67,6 +74,10 @@ pub fn decode_server_packet(packet: Vec<u8>) -> ServerAction {
         4 => {
             let id = packet[1];
             ServerAction::Shutdown(id)
+        }
+        5 => {
+            let id = packet[1];
+            ServerAction::Restart(id)
         }
         _ => panic!("Unknown action"),
     }
