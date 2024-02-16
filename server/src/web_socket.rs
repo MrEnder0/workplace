@@ -4,6 +4,7 @@ use std::{collections::HashMap, net::TcpListener, thread::spawn};
 
 use eframe::epaint::mutex::Mutex;
 use once_cell::sync::Lazy;
+use scorched::*;
 use tungstenite::{
     accept_hdr,
     handshake::server::{Request, Response},
@@ -26,7 +27,10 @@ pub fn server() {
         for stream in server.incoming() {
             spawn(move || {
                 let callback = |_req: &Request, mut response: Response| {
-                    println!("Received a new ws handshake");
+                    log_this(LogData {
+                        importance: LogImportance::Info,
+                        message: "Received a new ws handshake".to_string(),
+                    });
 
                     let headers = response.headers_mut();
                     headers.append("MyCustomHeader", ":)".parse().unwrap());
@@ -54,7 +58,10 @@ pub fn server() {
                                     ServerAction::Deny.into_bytes(),
                                 ))
                                 .unwrap_or_else(|_| {
-                                    println!("Failed to send deny message");
+                                    log_this(LogData {
+                                        importance: LogImportance::Warning,
+                                        message: "Failed to send deny message".to_string(),
+                                    });
                                     let _ = websocket.close(None);
                                 });
                         }
@@ -64,7 +71,10 @@ pub fn server() {
                                     ServerAction::Allow.into_bytes(),
                                 ))
                                 .unwrap_or_else(|_| {
-                                    println!("Failed to send allow message");
+                                    log_this(LogData {
+                                        importance: LogImportance::Warning,
+                                        message: "Failed to send allow message".to_string(),
+                                    });
                                     let _ = websocket.close(None);
                                 });
                         }
@@ -75,7 +85,10 @@ pub fn server() {
                             ServerAction::HeartBeat.into_bytes(),
                         ))
                         .unwrap_or_else(|_| {
-                            println!("Failed to send heartbeat message");
+                            log_this(LogData {
+                                importance: LogImportance::Warning,
+                                message: "Failed to send heartbeat message".to_string(),
+                            });
                             let _ = websocket.close(None);
                         });
 
@@ -85,14 +98,16 @@ pub fn server() {
 
                             match decoded_packet {
                                 ClientAction::HeartBeat(id) => {
-                                    println!("Received heartbeat from id {}", id);
                                     heartbeat::update_heartbeat(id);
                                 }
                             }
                         }
                         Ok(_) => {}
                         Err(_) => {
-                            println!("Error reading message, server may have disconnected. Attempting to reconnect...");
+                            log_this(LogData {
+                                importance: LogImportance::Warning,
+                                message: "Error reading message, server may have disconnected. Attempting to reconnect...".to_string(),
+                            });
                             break;
                         }
                     };

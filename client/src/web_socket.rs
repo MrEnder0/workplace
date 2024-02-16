@@ -1,5 +1,6 @@
 use std::thread;
 
+use scorched::*;
 use tungstenite::{connect, Message};
 use url::Url;
 use workplace_common::{decode_server_packet, ClientAction, ServerAction};
@@ -13,7 +14,10 @@ pub fn client() {
         ) {
             Ok((socket, response)) => (socket, response),
             Err(_) => {
-                println!("Can't connect, retrying in 5 seconds...");
+                log_this(LogData {
+                    importance: LogImportance::Warning,
+                    message: "Failed to connect to server, retrying in 5 seconds".to_string(),
+                });
                 thread::sleep(std::time::Duration::from_secs(5));
                 continue 'connection;
             }
@@ -21,7 +25,10 @@ pub fn client() {
 
         let mut id: Option<u8> = None;
 
-        println!("Connected to the server");
+        log_this(LogData {
+            importance: LogImportance::Info,
+            message: "Connected to server".to_string(),
+        });
 
         loop {
             match socket.read() {
@@ -33,7 +40,12 @@ pub fn client() {
                             id = Some(info.id);
 
                             if info.server_version != env!("CARGO_PKG_VERSION") {
-                                println!("Server is running a different version, updating...");
+                                log_this(LogData {
+                                    importance: LogImportance::Warning,
+                                    message:
+                                        "Client version does not match server version, updating..."
+                                            .to_string(),
+                                });
                                 update_client(&info.server_version);
                             }
                         }
@@ -56,7 +68,10 @@ pub fn client() {
                         }
                         ServerAction::Shutdown(requested_id) => {
                             if requested_id == id.unwrap() {
-                                println!("Shutting down client...");
+                                log_this(LogData {
+                                    importance: LogImportance::Info,
+                                    message: "Shutting down client...".to_string(),
+                                });
                                 std::process::Command::new("shutdown")
                                     .args(["/s", "/t", "0"])
                                     .spawn()
@@ -65,7 +80,10 @@ pub fn client() {
                         }
                         ServerAction::Restart(requested_id) => {
                             if requested_id == id.unwrap() {
-                                println!("Restarting client...");
+                                log_this(LogData {
+                                    importance: LogImportance::Info,
+                                    message: "Restarting client...".to_string(),
+                                });
                                 std::process::Command::new("shutdown")
                                     .args(["/r", "/t", "0"])
                                     .spawn()
@@ -76,7 +94,10 @@ pub fn client() {
                 }
                 Ok(_) => continue,
                 Err(_) => {
-                    println!("Error reading message, server may have disconnected. Attempting to reconnect...");
+                    log_this(LogData {
+                        importance: LogImportance::Warning,
+                        message: "Error reading message, server may have disconnected. Attempting to reconnect...".to_string(),
+                    });
                     break;
                 }
             };
@@ -88,7 +109,10 @@ fn get_server_ip() -> String {
     match std::fs::read_to_string(r"C:\ProgramData\server_ip.dat") {
         Ok(file) => file,
         Err(_) => {
-            println!("server_ip file not found, using localhost, please create server_ip file");
+            log_this(LogData {
+                importance: LogImportance::Warning,
+                message: "Failed to read server_ip.dat, using default IP".to_string(),
+            });
             "localhost".to_string()
         }
     }

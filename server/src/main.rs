@@ -4,11 +4,22 @@ mod heartbeat;
 mod web_socket;
 
 use eframe::egui::{self, ScrollArea};
+use scorched::*;
 use std::{sync::Mutex, thread, time::Duration};
 
 static STATUS: Mutex<bool> = Mutex::new(false);
 
 fn main() -> Result<(), eframe::Error> {
+    scorched::set_logging_path(workplace_common::LOGGING_PATH);
+
+    log_this(LogData {
+        importance: LogImportance::Info,
+        message: format!(
+            "Launching Workplace-Server version {}",
+            env!("CARGO_PKG_VERSION")
+        ),
+    });
+
     thread::spawn(|| {
         web_socket::server();
     });

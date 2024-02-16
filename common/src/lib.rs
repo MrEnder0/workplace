@@ -92,3 +92,5 @@ pub fn decode_client_packet(packet: Vec<u8>) -> ClientAction {
         _ => panic!("Unknown action"),
     }
 }
+
+pub const LOGGING_PATH: &str = "C:/ProgramData/WorkPlace/Logging/";

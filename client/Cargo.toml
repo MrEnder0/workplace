@@ -1,14 +1,15 @@
 [package]
 name = "workplace-client"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+workplace-common = { path = "../common" }
+scorched = "0.5.1"
 tungstenite = "0.21.0"
 url = "2.5.0"
 sysinfo = "0.30.5"
 self-replace = "1.3.7"
 reqwest = { version = "0.11.24", features = ["blocking"] }
-workplace-common = { path = "../common" }

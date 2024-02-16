@@ -7,15 +7,19 @@ use sysinfo::System;
 
 static STATUS: Mutex<bool> = Mutex::new(false);
 
-const PROCESS_NAMES: [&str; 5] = [
+const PROCESS_NAMES: [&str; 7] = [
     "RobloxPlayerBeta",
     "RobloxPlayer",
     "Minecraft.Windows",
     "EpicGamesLauncher",
+    "steam",
     "XboxPcApp",
+    "Discord",
 ];
 
 fn main() {
+    scorched::set_logging_path(workplace_common::LOGGING_PATH);
+
     thread::spawn(|| {
         web_socket::client();
     });

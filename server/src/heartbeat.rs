@@ -1,4 +1,5 @@
 use once_cell::sync::Lazy;
+use scorched::*;
 use std::{collections::HashMap, sync::Mutex};
 
 // Hashmap<id, last_heartbeat>
@@ -31,7 +32,10 @@ pub fn heartbeat_thread() {
         let heartbeats = HEARTBEATS.lock().unwrap().clone();
         for heartbeat in heartbeats.iter() {
             if heartbeat.1.elapsed().as_secs() > 15 {
-                println!("Heartbeat for id {} has expired", heartbeat.0);
+                log_this(LogData {
+                    importance: LogImportance::Warning,
+                    message: format!("Heartbeat for id {} has expired", heartbeat.0),
+                });
                 HEARTBEATS.lock().unwrap().remove(heartbeat.0);
             }
         }
