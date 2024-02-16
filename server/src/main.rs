@@ -5,9 +5,9 @@ mod web_socket;
 
 use eframe::egui::{self, ScrollArea};
 use scorched::*;
-use std::{sync::Mutex, thread, time::Duration};
+use std::{sync::atomic::{AtomicBool, Ordering}, thread, time::Duration};
 
-static STATUS: Mutex<bool> = Mutex::new(false);
+static STATUS: AtomicBool = AtomicBool::new(false);
 
 fn main() -> Result<(), eframe::Error> {
     scorched::set_logging_path(workplace_common::LOGGING_PATH);
@@ -68,7 +68,7 @@ impl eframe::App for MyApp {
             if ui
                 .add(egui::Checkbox::new(&mut self.status, "Deny Games")).on_hover_text("Denys games from running; recomended disable durring breaktime and leave on otherwise").changed()
             {
-                *STATUS.lock().unwrap() = self.status;
+                STATUS.store(self.status, Ordering::Relaxed);
             }
             if ui
                 .checkbox(&mut self.dark_mode, "Darkmode")

@@ -4,6 +4,7 @@ use scorched::*;
 use tungstenite::{connect, Message};
 use url::Url;
 use workplace_common::{decode_server_packet, ClientAction, ServerAction};
+use std::sync::atomic::Ordering;
 
 use crate::STATUS;
 
@@ -57,14 +58,10 @@ pub fn client() {
                                 .unwrap();
                         }
                         ServerAction::Allow => {
-                            if *STATUS.lock().unwrap() {
-                                *STATUS.lock().unwrap() = false;
-                            }
+                            STATUS.store(false, Ordering::Relaxed);
                         }
                         ServerAction::Deny => {
-                            if !*STATUS.lock().unwrap() {
-                                *STATUS.lock().unwrap() = true;
-                            }
+                            STATUS.store(true, Ordering::Relaxed);
                         }
                         ServerAction::Shutdown(requested_id) => {
                             if requested_id == id.unwrap() {

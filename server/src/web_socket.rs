@@ -1,8 +1,7 @@
 use crate::heartbeat;
 
-use std::{collections::HashMap, net::TcpListener, thread::spawn};
+use std::{collections::HashMap, net::TcpListener, sync::{atomic::Ordering, RwLock}, thread::spawn};
 
-use eframe::epaint::mutex::Mutex;
 use once_cell::sync::Lazy;
 use scorched::*;
 use tungstenite::{
@@ -12,8 +11,8 @@ use tungstenite::{
 };
 use workplace_common::{decode_client_packet, ClientAction, InitInfo, ServerAction};
 
-static PENDING_ACTIONS: Lazy<Mutex<HashMap<u8, UiAction>>> =
-    Lazy::new(|| Mutex::new(HashMap::new()));
+static PENDING_ACTIONS: Lazy<RwLock<HashMap<u8, UiAction>>> =
+    Lazy::new(|| RwLock::new(HashMap::new()));
 
 #[derive(Clone, Copy)]
 pub enum UiAction {
@@ -51,7 +50,7 @@ pub fn server() {
                     .unwrap();
 
                 spawn(move || loop {
-                    match *crate::STATUS.lock().unwrap() {
+                                        match crate::STATUS.load(Ordering::Relaxed) {
                         true => {
                             websocket
                                 .send(tungstenite::Message::binary(
@@ -112,7 +111,7 @@ pub fn server() {
                         }
                     };
 
-                    let pending_actions = PENDING_ACTIONS.lock().clone();
+                    let pending_actions = PENDING_ACTIONS.read().unwrap().clone();
 
                     for (id, action) in pending_actions.iter() {
                         match action {
@@ -122,6 +121,8 @@ pub fn server() {
                                         ServerAction::Shutdown(*id).into_bytes(),
                                     ))
                                     .unwrap();
+
+                                PENDING_ACTIONS.write().unwrap().remove(id);
                             }
                             UiAction::Restart => {
                                 websocket
@@ -129,6 +130,8 @@ pub fn server() {
                                         ServerAction::Restart(*id).into_bytes(),
                                     ))
                                     .unwrap();
+
+                                PENDING_ACTIONS.write().unwrap().remove(id);
                             }
                         }
                     }
@@ -141,9 +144,9 @@ pub fn server() {
 }
 
 pub fn request_shutdown(id: u8) {
-    PENDING_ACTIONS.lock().insert(id, UiAction::Shutdown);
+    PENDING_ACTIONS.write().unwrap().insert(id, UiAction::Shutdown);
 }
 
 pub fn request_restart(id: u8) {
-    PENDING_ACTIONS.lock().insert(id, UiAction::Restart);
+    PENDING_ACTIONS.write().unwrap().insert(id, UiAction::Restart);
 }

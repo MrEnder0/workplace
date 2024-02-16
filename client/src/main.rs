@@ -2,10 +2,10 @@
 
 mod web_socket;
 
-use std::{sync::Mutex, thread};
+use std::{sync::atomic::{AtomicBool, Ordering}, thread};
 use sysinfo::System;
 
-static STATUS: Mutex<bool> = Mutex::new(false);
+static STATUS: AtomicBool = AtomicBool::new(false);
 
 const PROCESS_NAMES: [&str; 7] = [
     "RobloxPlayerBeta",
@@ -26,7 +26,7 @@ fn main() {
 
     loop {
         thread::sleep(std::time::Duration::from_secs(3));
-        if *STATUS.lock().unwrap() {
+        if STATUS.load(Ordering::Relaxed) {
             let s = System::new_all();
             for process_name in PROCESS_NAMES.iter() {
                 for process in s.processes_by_name(process_name) {
