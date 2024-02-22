@@ -103,7 +103,7 @@ impl eframe::App for MyApp {
                 }
             });
 
-            if self.last_refresh.elapsed().as_secs() > 5 {
+            if self.last_refresh.elapsed().as_secs() > 3 {
                 self.clients = heartbeat::get_clients();
                 self.last_refresh = std::time::Instant::now();
             }

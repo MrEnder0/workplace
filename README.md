@@ -15,9 +15,9 @@ This allows you to remotely shutdown specific processes on devices on the same n
 > netsh advfirewall firewall add rule name= "Workplace Server" dir=in action=allow protocol=TCP localport=3012
 > ```
 
-* Now that you have set up your server get all the computers you want to control the workplace client executable, put this executable in the startup folder for the client computers
-* Create a file called "server_ip.dat" and place this in the directory "C:\ProgramData", If your client's windows installation is not on the C drive please create an issue so we can communicate a solution.
-* Inside your server_ip file put the private ip of the server computer.
+* Now that you have set up your server get all the computers you want to manage and create a folder called "WorkPlace" in the C drive, then put the workplace client executable in this folder
+* Create a shortcut to the client executable and place it in the startup applications of the client computers.
+* Create a file called "server_ip.dat" and place this in the workplace directory: "C:\WorkPlace" and put the ip of the server in this file.
 
 > [!NOTE]
-> Make sure your server_ip file has the .dat extension and is located in the C:\ProgramData directory, also if no server ip file is found the client will continue with seemingly normal operation but with a default set ip of localhost/127.0.0.1.
+> Make sure your server_ip file has the .dat extension and is located in the workplace directory, also if no server ip file is found the client will continue with seemingly normal operation but with a default set ip of localhost/127.0.0.1.
