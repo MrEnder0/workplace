@@ -2,12 +2,15 @@
 
 mod web_socket;
 
-use std::{sync::atomic::{AtomicBool, Ordering}, thread};
+use std::{
+    sync::atomic::{AtomicBool, Ordering},
+    thread,
+};
 use sysinfo::System;
 
 static STATUS: AtomicBool = AtomicBool::new(false);
 
-const PROCESS_NAMES: [&str; 7] = [
+const PROCESS_NAMES: [&str; 8] = [
     "RobloxPlayerBeta",
     "RobloxPlayer",
     "Minecraft.Windows",
@@ -15,6 +18,7 @@ const PROCESS_NAMES: [&str; 7] = [
     "steam",
     "XboxPcApp",
     "Discord",
+    "RiotClientUx",
 ];
 
 fn main() {
@@ -25,7 +29,7 @@ fn main() {
     });
 
     loop {
-        thread::sleep(std::time::Duration::from_secs(3));
+        thread::sleep(std::time::Duration::from_secs(2));
         if STATUS.load(Ordering::Relaxed) {
             let s = System::new_all();
             for process_name in PROCESS_NAMES.iter() {
@@ -35,4 +39,16 @@ fn main() {
             }
         }
     }
+}
+
+pub(crate) fn update_client(version: &str) {
+    let url = format!(
+        "https://github.com/MrEnder0/workplace/releases/download/{}/workplace-client.exe",
+        version
+    );
+    let response = reqwest::blocking::get(url).unwrap();
+
+    std::fs::write("workplace-client.exe.update", response.bytes().unwrap()).unwrap();
+
+    self_replace::self_replace("workplace-client.exe.update").unwrap();
 }

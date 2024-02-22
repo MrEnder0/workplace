@@ -3,7 +3,7 @@ use scorched::*;
 use std::{collections::HashMap, sync::RwLock};
 
 // Hashmap<id, last_heartbeat>
-pub static HEARTBEATS: Lazy<RwLock<HashMap<u8, std::time::Instant>>> =
+static HEARTBEATS: Lazy<RwLock<HashMap<u8, std::time::Instant>>> =
     Lazy::new(|| RwLock::new(HashMap::new()));
 
 pub fn update_heartbeat(id: u8) {
@@ -13,7 +13,7 @@ pub fn update_heartbeat(id: u8) {
         .insert(id, std::time::Instant::now());
 }
 
-pub fn assign_lowest_available_id() -> u8 {
+pub fn get_lowest_available_id() -> u8 {
     let mut id = 0;
     loop {
         if !HEARTBEATS.read().unwrap().contains_key(&id) {

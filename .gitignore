@@ -1,3 +1,6 @@
 /target
-server_ip
+
+# Ignore program specific files
+server_ip.dat
 *.update
+*.log

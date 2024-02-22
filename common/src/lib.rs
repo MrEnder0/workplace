@@ -1,3 +1,5 @@
+use scorched::{log_this, LogData, LogImportance};
+
 pub enum ServerAction {
     /// Gives unassigned clients their id
     Init(InitInfo),
@@ -79,7 +81,15 @@ pub fn decode_server_packet(packet: Vec<u8>) -> ServerAction {
             let id = packet[1];
             ServerAction::Restart(id)
         }
-        _ => panic!("Unknown action"),
+        _ => {
+            log_this(LogData {
+                importance: LogImportance::Error,
+                message:
+                    "Unknown action, client may have version mismatch with the connected server"
+                        .to_string(),
+            });
+            panic!("Unknown action");
+        }
     }
 }
 
@@ -89,8 +99,16 @@ pub fn decode_client_packet(packet: Vec<u8>) -> ClientAction {
             let id = packet[1];
             ClientAction::HeartBeat(id)
         }
-        _ => panic!("Unknown action"),
+        _ => {
+            log_this(LogData {
+                importance: LogImportance::Error,
+                message:
+                    "Unknown action, server may have version mismatch with the connected client"
+                        .to_string(),
+            });
+            panic!("Unknown action");
+        }
     }
 }
 
-pub const LOGGING_PATH: &str = "C:/ProgramData/WorkPlace/Logging/";
+pub const LOGGING_PATH: &str = "C:/WorkPlace/Logging/";

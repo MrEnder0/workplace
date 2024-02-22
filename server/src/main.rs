@@ -5,7 +5,11 @@ mod web_socket;
 
 use eframe::egui::{self, ScrollArea};
 use scorched::*;
-use std::{sync::atomic::{AtomicBool, Ordering}, thread, time::Duration};
+use std::{
+    sync::atomic::{AtomicBool, Ordering},
+    thread,
+    time::Duration,
+};
 
 static STATUS: AtomicBool = AtomicBool::new(false);
 
@@ -39,23 +43,23 @@ fn main() -> Result<(), eframe::Error> {
 }
 
 struct MyApp {
-    //init: bool,
     frame_limit: u8,
     dark_mode: bool,
     next_frame: Duration,
     status: bool,
     clients: Vec<u8>,
+    last_refresh: std::time::Instant,
 }
 
 impl Default for MyApp {
     fn default() -> Self {
         Self {
-            //init: true,
             frame_limit: 60,
             dark_mode: true,
             next_frame: Duration::from_secs(0),
             status: false,
             clients: vec![],
+            last_refresh: std::time::Instant::now(),
         }
     }
 }
@@ -95,10 +99,17 @@ impl eframe::App for MyApp {
                     .clicked()
                 {
                     self.clients = heartbeat::get_clients();
+                    self.last_refresh = std::time::Instant::now();
                 }
             });
 
-            //add scroll box vertical
+            if self.last_refresh.elapsed().as_secs() > 5 {
+                self.clients = heartbeat::get_clients();
+                self.last_refresh = std::time::Instant::now();
+            }
+
+            // Client info and management
+            let mut removed_clients: Vec<u8> = vec![];
             ScrollArea::vertical().show(ui, |ui| {
                 for client in self.clients.iter() {
                     ui.horizontal(|ui| {
@@ -109,6 +120,7 @@ impl eframe::App for MyApp {
                             .clicked()
                         {
                             web_socket::request_shutdown(*client);
+                            removed_clients.push(*client);
                         }
                         if ui
                             .button("Restart")
@@ -116,10 +128,15 @@ impl eframe::App for MyApp {
                             .clicked()
                         {
                             web_socket::request_restart(*client);
+                            removed_clients.push(*client);
                         }
                     });
                 }
             });
+
+            for client in removed_clients.iter() {
+                self.clients.remove((*client).into());
+            }
         });
 
         egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {

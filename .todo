@@ -19,8 +19,7 @@
     [x] Add logging to server
     [x] Add logging to client
 
-0.1.6
-[ ] Revamp server ui
-[ ] Create more client specific montioring systems
-	[ ] Screen preview
-	[ ] Remote shutdown/restart
+0.1.7
+[x] Fix issues with server desyncing info temporarily
+[x] Add logging to common utils and functions
+[x] Move logging path to new location

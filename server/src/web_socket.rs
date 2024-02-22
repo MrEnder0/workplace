@@ -1,6 +1,11 @@
 use crate::heartbeat;
 
-use std::{collections::HashMap, net::TcpListener, sync::{atomic::Ordering, RwLock}, thread::spawn};
+use std::{
+    collections::HashMap,
+    net::TcpListener,
+    sync::{atomic::Ordering, RwLock},
+    thread::spawn,
+};
 
 use once_cell::sync::Lazy;
 use scorched::*;
@@ -42,7 +47,7 @@ pub fn server() {
                 websocket
                     .send(tungstenite::Message::binary(
                         ServerAction::Init(InitInfo {
-                            id: heartbeat::assign_lowest_available_id(),
+                            id: heartbeat::get_lowest_available_id(),
                             server_version: env!("CARGO_PKG_VERSION").to_string(),
                         })
                         .into_bytes(),
@@ -50,7 +55,7 @@ pub fn server() {
                     .unwrap();
 
                 spawn(move || loop {
-                                        match crate::STATUS.load(Ordering::Relaxed) {
+                    match crate::STATUS.load(Ordering::Relaxed) {
                         true => {
                             websocket
                                 .send(tungstenite::Message::binary(
@@ -144,9 +149,15 @@ pub fn server() {
 }
 
 pub fn request_shutdown(id: u8) {
-    PENDING_ACTIONS.write().unwrap().insert(id, UiAction::Shutdown);
+    PENDING_ACTIONS
+        .write()
+        .unwrap()
+        .insert(id, UiAction::Shutdown);
 }
 
 pub fn request_restart(id: u8) {
-    PENDING_ACTIONS.write().unwrap().insert(id, UiAction::Restart);
+    PENDING_ACTIONS
+        .write()
+        .unwrap()
+        .insert(id, UiAction::Restart);
 }

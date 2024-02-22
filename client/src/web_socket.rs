@@ -1,10 +1,10 @@
 use std::thread;
 
 use scorched::*;
+use std::sync::atomic::Ordering;
 use tungstenite::{connect, Message};
 use url::Url;
 use workplace_common::{decode_server_packet, ClientAction, ServerAction};
-use std::sync::atomic::Ordering;
 
 use crate::STATUS;
 
@@ -47,7 +47,7 @@ pub fn client() {
                                         "Client version does not match server version, updating..."
                                             .to_string(),
                                 });
-                                update_client(&info.server_version);
+                                crate::update_client(&info.server_version);
                             }
                         }
                         ServerAction::HeartBeat => {
@@ -93,7 +93,7 @@ pub fn client() {
                 Err(_) => {
                     log_this(LogData {
                         importance: LogImportance::Warning,
-                        message: "Error reading message, server may have disconnected. Attempting to reconnect...".to_string(),
+                        message: "Server has disconected, attempting to reconnect...".to_string(),
                     });
                     break;
                 }
@@ -103,7 +103,7 @@ pub fn client() {
 }
 
 fn get_server_ip() -> String {
-    match std::fs::read_to_string(r"C:\ProgramData\server_ip.dat") {
+    match std::fs::read_to_string("C:/WorkPlace/server_ip.dat") {
         Ok(file) => file,
         Err(_) => {
             log_this(LogData {
@@ -113,16 +113,4 @@ fn get_server_ip() -> String {
             "localhost".to_string()
         }
     }
-}
-
-fn update_client(version: &str) {
-    let url = format!(
-        "https://github.com/MrEnder0/workplace/releases/download/{}/workplace-client.exe",
-        version
-    );
-    let response = reqwest::blocking::get(url).unwrap();
-
-    std::fs::write("workplace-client.exe.update", response.bytes().unwrap()).unwrap();
-
-    self_replace::self_replace("workplace-client.exe.update").unwrap();
 }

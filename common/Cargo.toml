@@ -1,8 +1,9 @@
 [package]
 name = "workplace-common"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+scorched = "0.5.1"
