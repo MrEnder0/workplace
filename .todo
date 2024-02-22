@@ -20,6 +20,9 @@
     [x] Add logging to client
 
 0.1.7
+[x] Perf and stability improvements
+
+0.1.8
 [x] Fix issues with server desyncing info temporarily
 [x] Add logging to common utils and functions
 [x] Move logging path to new location

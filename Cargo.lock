@@ -4049,7 +4049,7 @@ dependencies = [
 
 [[package]]
 name = "workplace-client"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "reqwest",
  "scorched",
@@ -4062,14 +4062,14 @@ dependencies = [
 
 [[package]]
 name = "workplace-common"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "scorched",
 ]
 
 [[package]]
 name = "workplace-server"
-version = "0.1.7"
+version = "0.1.8"
 dependencies = [
  "eframe",
  "once_cell",
