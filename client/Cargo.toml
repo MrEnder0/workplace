@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 workplace-common = { path = "../common" }
-scorched = "0.5.1"
+scorched = "0.5.2"
 tungstenite = "0.21.0"
 url = "2.5.0"
 sysinfo = "0.30.5"
