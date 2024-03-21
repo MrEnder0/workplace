@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 workplace-common = { path = "../common" }
-scorched = "0.5.1"
+scorched = "0.5.2"
 tungstenite = "0.21.0"
 eframe = "0.26.2"
 once_cell = "1.19.0"
