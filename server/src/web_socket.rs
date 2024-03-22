@@ -6,7 +6,6 @@ use std::{
     sync::{atomic::Ordering, RwLock},
     thread::spawn,
 };
-
 use once_cell::sync::Lazy;
 use scorched::*;
 use tungstenite::{
@@ -27,7 +26,7 @@ pub enum UiAction {
 
 pub fn server() {
     loop {
-        let server = TcpListener::bind(format!("{}:3012", get_server_ip())).unwrap();
+        let server = TcpListener::bind("0.0.0.0:3012").unwrap();
         for stream in server.incoming() {
             spawn(move || {
                 let callback = |_req: &Request, mut response: Response| {
@@ -141,7 +140,7 @@ pub fn server() {
                         }
                     }
 
-                    std::thread::sleep(std::time::Duration::from_secs(3));
+                    std::thread::sleep(std::time::Duration::from_secs(2));
                 });
             });
         }
@@ -160,17 +159,4 @@ pub fn request_restart(id: u8) {
         .write()
         .unwrap()
         .insert(id, UiAction::Restart);
-}
-
-fn get_server_ip() -> String {
-    match std::fs::read_to_string("C:/WorkPlace/server_ip.dat") {
-        Ok(file) => file,
-        Err(_) => {
-            log_this(LogData {
-                importance: LogImportance::Warning,
-                message: "Failed to read server_ip.dat, using default IP".to_string(),
-            });
-            "localhost".to_string()
-        }
-    }
 }

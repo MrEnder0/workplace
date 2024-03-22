@@ -1,7 +1,10 @@
 use std::thread;
 
 use scorched::*;
-use std::sync::atomic::Ordering;
+use std::{
+    net::TcpStream,
+    sync::{atomic::Ordering, mpsc::channel},
+};
 use tungstenite::{connect, Message};
 use url::Url;
 use workplace_common::{decode_server_packet, ClientAction, ServerAction};
@@ -103,14 +106,28 @@ pub fn client() {
 }
 
 fn get_server_ip() -> String {
-    match std::fs::read_to_string("C:/WorkPlace/server_ip.dat") {
-        Ok(file) => file,
-        Err(_) => {
-            log_this(LogData {
-                importance: LogImportance::Warning,
-                message: "Failed to read server_ip.dat, using default IP".to_string(),
-            });
-            "localhost".to_string()
-        }
+    let (tx, rx) = channel();
+
+    let base_ip = "192.168.1.";
+
+    for i in 1..=254 {
+        let ip = base_ip.to_owned() + &i.to_string();
+        let tx_clone = tx.clone();
+        let addr = format!("{}:3012", ip);
+
+        thread::spawn(move || match TcpStream::connect(addr) {
+            Ok(_) => {
+                log_this(LogData {
+                    importance: LogImportance::Info,
+                    message: format!("Found Server: {}", ip),
+                });
+                tx_clone.send(ip).unwrap();
+            }
+            Err(_) => {}
+        });
     }
+
+    drop(tx);
+
+    rx.recv().unwrap()
 }
