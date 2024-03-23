@@ -115,15 +115,14 @@ fn get_server_ip() -> String {
         let tx_clone = tx.clone();
         let addr = format!("{}:3012", ip);
 
-        thread::spawn(move || match TcpStream::connect(addr) {
-            Ok(_) => {
+        thread::spawn(move || {
+            if TcpStream::connect(addr).is_ok() {
                 log_this(LogData {
                     importance: LogImportance::Info,
                     message: format!("Found Server: {}", ip),
                 });
                 tx_clone.send(ip).unwrap();
             }
-            Err(_) => {}
         });
     }
 
