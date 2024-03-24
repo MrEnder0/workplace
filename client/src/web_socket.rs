@@ -51,6 +51,12 @@ pub fn client() {
                                             .to_string(),
                                 });
                                 crate::update_client(&info.server_version);
+
+                                socket
+                                    .send(Message::Binary(
+                                        ClientAction::Update(id.unwrap()).into_bytes(),
+                                    ))
+                                    .unwrap();
                             }
                         }
                         ServerAction::HeartBeat => {

@@ -49,6 +49,8 @@ impl ServerAction {
 pub enum ClientAction {
     /// Reply to the server's heartbeat request with the client's id
     HeartBeat(u8),
+    /// Notify the server that the client has updated and is pending a restart
+    Update(u8),
 }
 
 impl ClientAction {
@@ -56,6 +58,11 @@ impl ClientAction {
         match self {
             ClientAction::HeartBeat(id) => {
                 let mut bytes = vec![0];
+                bytes.push(id);
+                bytes
+            }
+            ClientAction::Update(id) => {
+                let mut bytes = vec![1];
                 bytes.push(id);
                 bytes
             }
@@ -98,6 +105,10 @@ pub fn decode_client_packet(packet: Vec<u8>) -> ClientAction {
         0 => {
             let id = packet[1];
             ClientAction::HeartBeat(id)
+        }
+        1 => {
+            let id = packet[1];
+            ClientAction::Update(id)
         }
         _ => {
             log_this(LogData {

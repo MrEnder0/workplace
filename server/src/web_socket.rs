@@ -1,13 +1,13 @@
-use crate::heartbeat;
+use crate::{heartbeat, UPDATED};
 
+use once_cell::sync::Lazy;
+use scorched::*;
 use std::{
     collections::HashMap,
     net::TcpListener,
     sync::{atomic::Ordering, RwLock},
     thread::spawn,
 };
-use once_cell::sync::Lazy;
-use scorched::*;
 use tungstenite::{
     accept_hdr,
     handshake::server::{Request, Response},
@@ -103,6 +103,17 @@ pub fn server() {
                                 ClientAction::HeartBeat(id) => {
                                     heartbeat::update_heartbeat(id);
                                 }
+                                ClientAction::Update(id) => {
+                                    log_this(LogData {
+                                        importance: LogImportance::Info,
+                                        message: format!(
+                                            "Client {} has been updated, pending restart...",
+                                            id
+                                        ),
+                                    });
+
+                                    UPDATED.write().unwrap().push(id);
+                                }
                             }
                         }
                         Ok(_) => {}
@@ -159,4 +170,8 @@ pub fn request_restart(id: u8) {
         .write()
         .unwrap()
         .insert(id, UiAction::Restart);
+}
+
+pub fn get_updated() -> Vec<u8> {
+    UPDATED.read().unwrap().clone()
 }

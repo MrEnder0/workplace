@@ -4,14 +4,16 @@ mod heartbeat;
 mod web_socket;
 
 use eframe::egui::{self, ScrollArea};
+use once_cell::sync::Lazy;
 use scorched::*;
 use std::{
-    sync::atomic::{AtomicBool, Ordering},
+    sync::{atomic::{AtomicBool, Ordering}, RwLock},
     thread,
     time::Duration,
 };
 
 static STATUS: AtomicBool = AtomicBool::new(false);
+static UPDATED: Lazy<RwLock<Vec<u8>>> = Lazy::new(|| RwLock::new(vec![]));
 
 fn main() -> Result<(), eframe::Error> {
     scorched::set_logging_path(workplace_common::LOGGING_PATH);
@@ -48,6 +50,7 @@ struct MyApp {
     next_frame: Duration,
     status: bool,
     clients: Vec<u8>,
+    updated: Vec<u8>,
     last_refresh: std::time::Instant,
 }
 
@@ -59,6 +62,7 @@ impl Default for MyApp {
             next_frame: Duration::from_secs(0),
             status: false,
             clients: vec![],
+            updated: vec![],
             last_refresh: std::time::Instant::now(),
         }
     }
@@ -99,12 +103,14 @@ impl eframe::App for MyApp {
                     .clicked()
                 {
                     self.clients = heartbeat::get_clients();
+                    self.updated = web_socket::get_updated();
                     self.last_refresh = std::time::Instant::now();
                 }
             });
 
             if self.last_refresh.elapsed().as_secs() > 3 {
                 self.clients = heartbeat::get_clients();
+                self.updated = web_socket::get_updated();
                 self.last_refresh = std::time::Instant::now();
             }
 
@@ -129,6 +135,9 @@ impl eframe::App for MyApp {
                         {
                             web_socket::request_restart(*client);
                             removed_clients.push(*client);
+                        }
+                        if self.updated.contains(client) {
+                            ui.label("Updated").on_hover_text("Client has been updated and is pending a restart");
                         }
                     });
                 }
